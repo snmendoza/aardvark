@@ -30,6 +30,7 @@ from pandas.core.generic import NDFrame
 from argos.repo.baserti import BaseRti, shapeToSummary
 from argos.repo.iconfactory import RtiIconFactory, ICON_COLOR_UNDEF
 from argos.utils.cls import checkType
+from argos.repo.rtiplugins import arbinio
 
 logger = logging.getLogger(__name__)
 
@@ -309,11 +310,44 @@ class PandasDataFrameRti(AbstractPandasNDFrameRti):
             childItems.append(self._createIndexRti(self._ndFrame.columns, 'columns'))
 
         return childItems
+    
+
 
 
 
 class PandasCsvFileRti(PandasDataFrameRti):
     """ Reads a comma-separated file (CSV) into a Pandas DataFrame.
+    """
+    _defaultIconGlyph = RtiIconFactory.FILE
+
+    def __init__(self, nodeName='', fileName='', iconColor=ICON_COLOR_UNDEF):
+        """ Constructor. Initializes as an ArrayRTI with None as underlying array.
+        """
+        super(PandasCsvFileRti, self).__init__(ndFrame=None, nodeName=nodeName, fileName=fileName,
+                                               iconColor=iconColor, standAlone=True)
+        self._checkFileExists()
+        self._ndFrame = None
+
+
+    def hasChildren(self):
+        """ Returns True so that a triangle is added that expands the node and opens the file
+        """
+        return True
+
+
+    def _openResources(self):
+        """ Uses pandas.read_cs to open the underlying file
+        """
+        self._ndFrame = pd.read_csv(self._fileName, comment='#')
+
+
+    def _closeResources(self):
+        """ Closes the underlying resources
+        """
+        self._ndFrame = None
+    
+class PandasArbin8FileRti(PandasDataFrameRti):
+    """ Reads an .xlsx arbon data test filefrom MITS Pro 8
     """
     _defaultIconGlyph = RtiIconFactory.FILE
 
